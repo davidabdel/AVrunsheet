@@ -12,9 +12,14 @@ const App: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [segments, setSegments] = useState<Segment[]>(() => {
+    if (typeof window === 'undefined') return INITIAL_SEGMENTS;
     try {
       const saved = localStorage.getItem('runSheetData');
-      return saved ? JSON.parse(saved) : INITIAL_SEGMENTS;
+      if (saved) return JSON.parse(saved);
+
+      // Fallback to backup if main save is missing
+      const backup = localStorage.getItem('runSheetData_backup');
+      return backup ? JSON.parse(backup) : INITIAL_SEGMENTS;
     } catch (e) {
       return INITIAL_SEGMENTS;
     }
@@ -22,14 +27,36 @@ const App: React.FC = () => {
 
   const [showTemplates, setShowTemplates] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(segments.length === 0);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const segmentsRef = useRef(segments);
 
+  // Keep ref updated for the interval
+  useEffect(() => {
+    segmentsRef.current = segments;
+  }, [segments]);
+
+  // Main auto-save (Instant)
   useEffect(() => {
     localStorage.setItem('runSheetData', JSON.stringify(segments));
+    setLastSaved(new Date());
+
     // Show welcome modal when segments become empty
     if (segments.length === 0) {
       setShowWelcomeModal(true);
     }
   }, [segments]);
+
+  // Backup auto-save (Every 3 minutes)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (segmentsRef.current.length > 0) {
+        localStorage.setItem('runSheetData_backup', JSON.stringify(segmentsRef.current));
+        console.log('3-minute backup saved');
+      }
+    }, 3 * 60 * 1000); // 3 minutes
+
+    return () => clearInterval(interval);
+  }, []);
 
   const addSegment = (type: SegmentType) => {
     const newSegment: Segment = {
@@ -360,6 +387,12 @@ const App: React.FC = () => {
           </div>
           <div className="flex gap-2 items-center">
 
+            {lastSaved && (
+              <span className="text-xs text-gray-400 mr-2 hidden sm:inline-block">
+                Saved {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
+
             <button
               onClick={handleImportClick}
               className="flex items-center gap-1 px-3 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-md transition-colors"
@@ -461,6 +494,11 @@ const App: React.FC = () => {
 
               <button
                 onClick={() => {
+                  setSegments([{
+                    id: generateId(),
+                    type: SegmentType.Header,
+                    content: { title: '', subtitle: '', date: '' }
+                  }]);
                   setShowWelcomeModal(false);
                 }}
                 className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors font-medium"

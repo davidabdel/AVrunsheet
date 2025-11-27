@@ -1,16 +1,6 @@
 import { Segment, SegmentType } from './types';
 
-export const INITIAL_SEGMENTS: Segment[] = [
-  {
-    id: '1',
-    type: SegmentType.Header,
-    content: {
-      title: '',
-      subtitle: '',
-      date: ''
-    }
-  }
-];
+export const INITIAL_SEGMENTS: Segment[] = [];
 
 export const CIRCUIT_ASSEMBLY_2025: Segment[] = [
   {
