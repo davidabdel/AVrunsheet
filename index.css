@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+    --color-sheet-red: #D32F2F;
+    --color-sheet-green: #388E3C;
+    --color-sheet-cyan: #00BCD4;
+    --color-sheet-blue: #E3F2FD;
+    --font-sans: Arial, Helvetica, sans-serif;
+}
+
+@media print {
+    @page {
+        margin: 0.5in;
+        size: A4;
+    }
+
+    body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
