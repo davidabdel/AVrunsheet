@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Printer, FileText, Monitor, Mic, Clock, Type, Scissors, Image as ImageIcon, Download, Upload, RotateCcw, LayoutTemplate, Loader2 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import { Segment, SegmentType, SegmentContent } from './types';
-import { INITIAL_SEGMENTS, CIRCUIT_ASSEMBLY_2025 } from './constants';
+import { INITIAL_SEGMENTS, CIRCUIT_ASSEMBLY_2025, DEFAULT_STAGE_ITEMS } from './constants';
 import { SegmentRow } from './components/SegmentRow';
 
 // Safer ID generator that works in all contexts (even non-secure http)
@@ -64,7 +64,7 @@ const App: React.FC = () => {
       type,
       content: {
         isMedia: type === SegmentType.Cue ? true : undefined,
-        stageItems: type === SegmentType.Diagram ? [] : undefined
+        stageItems: type === SegmentType.Diagram ? DEFAULT_STAGE_ITEMS.map(i => ({ ...i, id: generateId() })) : undefined
       }
     };
     setSegments([...segments, newSegment]);
@@ -104,7 +104,9 @@ const App: React.FC = () => {
     const newSegment: Segment = {
       id: generateId(),
       type,
-      content: {}
+      content: {
+        stageItems: type === SegmentType.Diagram ? DEFAULT_STAGE_ITEMS.map(i => ({ ...i, id: generateId() })) : undefined
+      }
     };
     const newSegments = [...segments];
     newSegments.splice(index + 1, 0, newSegment);
@@ -274,7 +276,7 @@ const App: React.FC = () => {
               return {
                 ...segment,
                 type: SegmentType.Diagram,
-                content: { items: [] } // Empty diagram that user can populate
+                content: { stageItems: DEFAULT_STAGE_ITEMS.map(i => ({ ...i, id: generateId() })) } // Default items for detected diagrams
               };
             }
 

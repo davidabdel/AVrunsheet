@@ -13,6 +13,7 @@ const generateId = () => Date.now().toString(36) + Math.random().toString(36).su
 export const StageDiagram: React.FC<StageDiagramProps> = ({ items = [], onChange, readOnly = false }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hasMoved, setHasMoved] = useState(false);
   const clickTimeRef = useRef<number>(0);
 
@@ -31,6 +32,7 @@ export const StageDiagram: React.FC<StageDiagramProps> = ({ items = [], onChange
 
     clickTimeRef.current = now;
     setDraggingId(id);
+    setSelectedId(id);
     setHasMoved(false);
     e.stopPropagation();
   };
@@ -72,29 +74,60 @@ export const StageDiagram: React.FC<StageDiagramProps> = ({ items = [], onChange
   // --- Icon Components ---
 
   const BlueLecternIcon = ({ size = 24 }: { size?: number }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 6h12" /> {/* Top horizontal */}
-      <path d="M12 6v10" /> {/* Vertical stem */}
-      <path d="M12 16l-4 6" /> {/* Left leg */}
-      <path d="M12 16l4 6" /> {/* Right leg */}
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      {/* Base */}
+      <rect x="6" y="21" width="12" height="2" rx="1" fill="#B27863" />
+      <rect x="7" y="21" width="10" height="1" fill="#915B48" />
+
+      {/* Main Column */}
+      <path d="M7 21L9 10H15L17 21H7Z" fill="#7B4736" />
+      {/* Column shadow/texture */}
+      <rect x="11.5" y="12" width="1" height="7" rx="0.5" fill="#E4AB8A" />
+
+      {/* Top Surface */}
+      <rect x="3" y="6" width="18" height="5" rx="1.5" fill="#B27863" />
+      <rect x="4" y="6" width="16" height="1.5" rx="0.5" fill="#C58E78" />
+
+      {/* Gooseneck Mic */}
+      <path d="M6 6V1C6 1 6 0.5 6.5 0.5H9C10 0.5 10 1.5 10 1.5" stroke="#4A4A4A" strokeWidth="1.5" strokeLinecap="round" />
+      <rect x="9" y="0.2" width="4" height="2" rx="1" fill="#756F6D" />
     </svg>
   );
 
   const BlueStandIcon = ({ size = 24 }: { size?: number }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 21V6" /> {/* Vertical */}
-      <path d="M12 6L7 2" /> {/* Angled top left */}
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      {/* Vertical Stand */}
+      <path d="M10 24V10" stroke="#1F2937" strokeWidth="2" />
+
+      {/* Boom Arm */}
+      <path d="M3 16L17 7" stroke="#1F2937" strokeWidth="2" />
+
+      {/* Joint Knob */}
+      <circle cx="10" cy="10" r="2.5" fill="#1F2937" />
+      <circle cx="10" cy="10" r="0.8" fill="white" />
+
+      {/* Cable */}
+      <path d="M15 8.5Q11 11 11 15" stroke="#1F2937" strokeWidth="0.5" fill="none" />
+
+      {/* Microphone at end */}
+      <g transform="translate(16, 5) rotate(-30)">
+        <rect x="0" y="0" width="3.5" height="2" rx="0.5" fill="#1F2937" />
+        <path d="M3.5 0.3C4.5 0.3 5 1 5 1C5 1 4.5 1.7 3.5 1.7" fill="#F3F4F6" stroke="#1F2937" strokeWidth="0.3" />
+      </g>
     </svg>
   );
 
-  const MicIcon = ({ size = 24, color }: { size?: number, color: string }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill={color} stroke="none">
-      {/* Rotated Mic Shape */}
+  const MicIcon = ({ size = 24, color = "#4A5568" }: { size?: number, color?: string }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <g transform="rotate(45 12 12)">
-        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-        <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke={color} strokeWidth="2" fill="none" />
-        <path d="M12 19v4" stroke={color} strokeWidth="2" />
-        <path d="M8 23h8" stroke={color} strokeWidth="2" />
+        {/* Mic Handle */}
+        <rect x="10.5" y="10" width="3" height="12" rx="1.5" fill={color} />
+        {/* Mic Head / Grille */}
+        <path d="M12 2C10.34 2 9 3.34 9 5C9 6.2 9.71 7.23 10.74 7.71L13.26 7.71C14.29 7.23 15 6.2 15 5C15 3.34 13.66 2 12 2Z" fill="#F3F4F6" stroke="#9CA3AF" strokeWidth="0.5" />
+        {/* Grille Band */}
+        <rect x="9" y="7.5" width="6" height="1.5" rx="0.5" fill="#9CA3AF" />
+        {/* Switch shadow */}
+        <rect x="11.5" y="12" width="1" height="2" rx="0.5" fill="black" fillOpacity="0.2" />
       </g>
     </svg>
   );
@@ -102,24 +135,16 @@ export const StageDiagram: React.FC<StageDiagramProps> = ({ items = [], onChange
   const ChairIcon = ({ size = 24 }: { size?: number }) => {
     return (
       <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-        {/* Back left leg */}
-        <rect x="8" y="4" width="2" height="14" fill="#A0704F" rx="0.5" />
-        {/* Back right leg */}
-        <rect x="14" y="4" width="2" height="14" fill="#8B5E3C" rx="0.5" />
-        {/* Front left leg */}
-        <rect x="8" y="12" width="2" height="8" fill="#A0704F" rx="0.5" />
-        {/* Front right leg */}
-        <rect x="14" y="12" width="2" height="8" fill="#8B5E3C" rx="0.5" />
+        {/* Legs */}
+        <path d="M6 14.5L5.5 22H7.5L8 14.5Z" fill="#B08D64" stroke="black" strokeWidth="1" strokeLinejoin="round" />
+        <path d="M11 14.5L11 22H13L13 14.5Z" fill="#B08D64" stroke="black" strokeWidth="1" strokeLinejoin="round" />
+        <path d="M16 14.5L16 22H18L18 14.5Z" fill="#B08D64" stroke="black" strokeWidth="1" strokeLinejoin="round" />
 
-        {/* Backrest horizontal bar */}
-        <rect x="8" y="6" width="8" height="2" fill="#C4956B" rx="0.5" />
+        {/* Backrest */}
+        <path d="M10 12L11.5 2H18.5L17 12H10Z" fill="#D28B5C" stroke="black" strokeWidth="1.5" strokeLinejoin="round" />
 
-        {/* Seat - isometric view */}
-        <path d="M 7 12 L 17 12 L 16 14 L 8 14 Z" fill="#D4C4A8" />
-        <path d="M 8 14 L 16 14 L 16 15 L 8 15 Z" fill="#BFB090" />
-
-        {/* Support bars under seat */}
-        <rect x="8" y="15" width="8" height="1" fill="#8B5E3C" rx="0.3" />
+        {/* Seat */}
+        <path d="M5 12H17.5V14.5H6.5C5.5 14.5 5 14 5 13.5V12Z" fill="#E4AB8A" stroke="black" strokeWidth="1.5" strokeLinejoin="round" />
       </svg>
     );
   };
@@ -148,10 +173,10 @@ export const StageDiagram: React.FC<StageDiagramProps> = ({ items = [], onChange
     switch (type) {
       case 'lectern-blue': return <BlueLecternIcon size={size} />;
       case 'stand-blue': return <BlueStandIcon size={size} />;
-      case 'mic-grey': return <MicIcon size={size} color="#9CA3AF" />;
-      case 'mic-yellow': return <MicIcon size={size} color="#EAB308" />;
-      case 'mic-red': return <MicIcon size={size} color="#EF4444" />;
-      case 'mic-blue': return <MicIcon size={size} color="#3B82F6" />;
+      case 'mic-grey': return <MicIcon size={size} color="#4B5563" />;
+      case 'mic-yellow': return <MicIcon size={size} color="#CA8A04" />;
+      case 'mic-red': return <MicIcon size={size} color="#B91C1C" />;
+      case 'mic-blue': return <MicIcon size={size} color="#1D4ED8" />;
       case 'chair': return <ChairIcon size={size} />;
       case 'table': return <TableIcon size={size} />;
       default: return <div className="w-4 h-4 bg-black rounded-full" />;
@@ -183,22 +208,22 @@ export const StageDiagram: React.FC<StageDiagramProps> = ({ items = [], onChange
             </button>
 
             <button onClick={() => addItem('mic-grey')} className="p-1 hover:bg-white hover:shadow rounded transition-all flex flex-col items-center gap-1" title="Add Grey Mic">
-              <MicIcon size={20} color="#9CA3AF" />
+              <MicIcon size={20} color="#4B5563" />
               <span className="text-[10px] text-gray-400">Mic (B)</span>
             </button>
 
             <button onClick={() => addItem('mic-yellow')} className="p-1 hover:bg-white hover:shadow rounded transition-all flex flex-col items-center gap-1" title="Add Yellow Mic">
-              <MicIcon size={20} color="#EAB308" />
+              <MicIcon size={20} color="#CA8A04" />
               <span className="text-[10px] text-gray-400">Mic (W)</span>
             </button>
 
             <button onClick={() => addItem('mic-red')} className="p-1 hover:bg-white hover:shadow rounded transition-all flex flex-col items-center gap-1" title="Add Red Mic">
-              <MicIcon size={20} color="#EF4444" />
+              <MicIcon size={20} color="#B91C1C" />
               <span className="text-[10px] text-gray-400">Mic (R)</span>
             </button>
 
             <button onClick={() => addItem('mic-blue')} className="p-1 hover:bg-white hover:shadow rounded transition-all flex flex-col items-center gap-1" title="Add Blue Mic">
-              <MicIcon size={20} color="#3B82F6" />
+              <MicIcon size={20} color="#1D4ED8" />
               <span className="text-[10px] text-gray-400">Mic (B)</span>
             </button>
 
@@ -212,6 +237,28 @@ export const StageDiagram: React.FC<StageDiagramProps> = ({ items = [], onChange
               <TableIcon size={20} />
               <span className="text-[10px] text-gray-400">Table</span>
             </button>
+
+            <div className="w-px h-8 bg-gray-200 mx-2"></div>
+
+            <button
+              onClick={() => {
+                if (selectedId) {
+                  onChange(items.map(item =>
+                    item.id === selectedId ? { ...item, flipped: !item.flipped } : item
+                  ));
+                }
+              }}
+              className={`p-1 hover:bg-white hover:shadow rounded transition-all flex flex-col items-center gap-1 ${!selectedId ? 'opacity-30 cursor-not-allowed' : ''}`}
+              title="Flip Selected"
+              disabled={!selectedId}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M11 19l-7-7 7-7" />
+                <path d="M13 5l7 7-7 7" />
+                <line x1="12" y1="2" x2="12" y2="22" strokeDasharray="4" />
+              </svg>
+              <span className="text-[10px] text-gray-400">Flip</span>
+            </button>
           </div>
         </div>
       )}
@@ -220,6 +267,7 @@ export const StageDiagram: React.FC<StageDiagramProps> = ({ items = [], onChange
         ref={svgRef}
         viewBox="0 0 400 120"
         className="w-full h-40 border-b border-black cursor-crosshair bg-white"
+        onMouseDown={() => setSelectedId(null)}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
@@ -236,10 +284,10 @@ export const StageDiagram: React.FC<StageDiagramProps> = ({ items = [], onChange
           <g
             key={item.id}
             transform={`translate(${item.x * 4}, ${item.y})`}
-            className={`cursor-move ${draggingId === item.id ? 'opacity-50' : ''}`}
+            className={`cursor-move ${draggingId === item.id ? 'opacity-50' : ''} ${selectedId === item.id ? 'filter drop-shadow-[0_0_2px_rgba(59,130,246,0.8)]' : ''}`}
             onMouseDown={(e) => handleMouseDown(e, item.id)}
           >
-            <g transform="translate(-15, -15)">
+            <g transform={`${item.flipped ? 'scale(-1, 1)' : ''} translate(-15, -15)`}>
               {renderIcon(item.type, 30)}
             </g>
           </g>

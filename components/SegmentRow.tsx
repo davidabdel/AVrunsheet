@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Segment, SegmentType, SegmentContent } from '../types';
 import { StageDiagram } from './StageDiagram';
 import { Trash2, ArrowUp, ArrowDown, Plus } from 'lucide-react';
@@ -14,6 +14,15 @@ interface SegmentRowProps {
 export const SegmentRow: React.FC<SegmentRowProps> = ({ segment, onChange, onRemove, onMove, onInsertAfter }) => {
   const { id, type, content } = segment;
   const [showInsertMenu, setShowInsertMenu] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-resize on content change/mount
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+    }
+  }, [content.text, content.title, type]);
 
   const update = (field: keyof SegmentContent, value: any) => {
     onChange(id, { ...content, [field]: value });
@@ -25,16 +34,12 @@ export const SegmentRow: React.FC<SegmentRowProps> = ({ segment, onChange, onRem
         return (
           <div className="text-center mb-6 pt-2">
             <textarea
-              className="w-full text-center text-3xl font-bold border-none bg-transparent focus:ring-1 focus:ring-gray-300 placeholder-gray-300 rounded hover:bg-white transition-colors resize-none break-words whitespace-pre-wrap"
+              ref={textareaRef}
+              className="w-full text-center text-3xl font-bold border-none bg-transparent focus:ring-1 focus:ring-gray-300 placeholder-gray-300 rounded hover:bg-white transition-colors resize-none break-words whitespace-pre-wrap overflow-hidden"
               value={content.title || ''}
               onChange={(e) => update('title', e.target.value)}
               placeholder="Convention Title"
-              rows={2}
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = 'auto';
-                target.style.height = target.scrollHeight + 'px';
-              }}
+              rows={1}
             />
             <input
               className="w-full text-center text-xl font-bold border-none bg-transparent focus:ring-1 focus:ring-gray-300 placeholder-gray-300 mt-1 rounded hover:bg-white transition-colors"
@@ -56,11 +61,12 @@ export const SegmentRow: React.FC<SegmentRowProps> = ({ segment, onChange, onRem
         const startsWithNote = /^notes?:\s*/i.test(noteText);
 
         return (
-          <div className="border border-gray-300 p-3 text-sm mb-2 hover:bg-white transition-colors">
-            {!startsWithNote && <span className="font-bold text-blue-600 mr-1">Note:</span>}
+          <div className="border border-gray-300 p-3 text-sm mb-2 hover:bg-white transition-colors flex items-start">
+            {!startsWithNote && <span className="font-bold text-blue-600 mr-1 mt-0.5">Note:</span>}
             <textarea
-              className="w-full align-top bg-transparent border-none focus:ring-0 resize-none overflow-hidden"
-              rows={3}
+              ref={textareaRef}
+              className="w-full align-top bg-transparent border-none focus:ring-0 resize-none overflow-hidden p-0 m-0 leading-normal"
+              rows={1}
               value={noteText}
               onChange={(e) => update('text', e.target.value)}
               placeholder="Enter note instructions here..."
@@ -82,16 +88,12 @@ export const SegmentRow: React.FC<SegmentRowProps> = ({ segment, onChange, onRem
               <span className="text-sheet-cyan font-bold text-sm">)</span>
             </div>
             <textarea
-              className="w-full bg-transparent border-none p-0 focus:ring-0 resize-none"
+              ref={textareaRef}
+              className="w-full bg-transparent border-none p-0 focus:ring-0 resize-none overflow-hidden leading-snug"
               rows={1}
               value={content.text || ''}
               onChange={(e) => update('text', e.target.value)}
               placeholder="Event description..."
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = 'auto';
-                target.style.height = target.scrollHeight + 'px';
-              }}
             />
           </div>
         );
@@ -177,16 +179,12 @@ export const SegmentRow: React.FC<SegmentRowProps> = ({ segment, onChange, onRem
           <div className="border border-dotted border-gray-400 p-3 text-sm my-2 hover:bg-white transition-colors">
             <div className="text-sheet-green font-bold text-xs uppercase mb-1">Speaker</div>
             <textarea
-              className="w-full bg-transparent border-none p-0 focus:ring-0 resize-none"
-              rows={2}
+              ref={textareaRef}
+              className="w-full bg-transparent border-none p-0 focus:ring-0 resize-none overflow-hidden leading-normal"
+              rows={1}
               value={content.text || ''}
               onChange={(e) => update('text', e.target.value)}
               placeholder="Speaker notes or script..."
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = 'auto';
-                target.style.height = target.scrollHeight + 'px';
-              }}
             />
           </div>
         );

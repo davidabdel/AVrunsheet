@@ -1,4 +1,10 @@
-import { Segment, SegmentType } from './types';
+import { Segment, SegmentType, StageItem } from './types';
+
+export const DEFAULT_STAGE_ITEMS: StageItem[] = [
+  { id: 'default-stand', type: 'stand-blue', x: 25, y: 70, flipped: true },
+  { id: 'default-lectern', type: 'lectern-blue', x: 50, y: 70 }
+];
+
 
 export const INITIAL_SEGMENTS: Segment[] = [];
 

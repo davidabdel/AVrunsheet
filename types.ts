@@ -13,6 +13,8 @@ export interface StageItem {
   type: string;
   x: number;
   y: number;
+  flipped?: boolean;
+  color?: string;
 }
 
 export interface SegmentContent {
@@ -20,19 +22,19 @@ export interface SegmentContent {
   title?: string;
   subtitle?: string;
   date?: string;
-  
+
   // Note / Speaker
   text?: string;
-  
+
   // TimeBox
   time?: string;
-  
+
   // Cue
   cueLabel?: string; // e.g. "Camera 1 Preset 1" or "Media"
   cueId?: string;    // e.g. "Track 001"
   cueDesc?: string;  // e.g. "Convention Theme"
   isMedia?: boolean; // Toggles red text color
-  
+
   // Diagram
   stageItems?: StageItem[];
 }
